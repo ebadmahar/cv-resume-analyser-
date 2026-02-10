@@ -1,6 +1,7 @@
 <?php
 require_once '../config/db.php';
 require_once '../includes/functions.php';
+require_once '../includes/pro_tips.php';
 
 requireLogin();
 
@@ -168,10 +169,10 @@ $totalAnalyses = $stmtCount->fetchColumn();
     </div>
     <?php endif; ?>
 
-    <!-- Stats Cards -->
+    <!-- Pro Tip Section -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="card p-3">
+            <div class="card p-3 h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <small class="text-muted text-uppercase fw-bold">Total Scans</small>
@@ -179,6 +180,17 @@ $totalAnalyses = $stmtCount->fetchColumn();
                     </div>
                     <div class="bg-light p-3 rounded-circle text-primary">
                         <i class="fas fa-file-alt fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card p-3 h-100 border-0 bg-gradient text-white" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);">
+                <div class="d-flex align-items-center h-100">
+                    <div class="me-3 opacity-75"><i class="fas fa-lightbulb fa-2x"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Pro Tip for your CV:</h6>
+                        <p class="mb-0 small opacity-90"><?= htmlspecialchars(getProTip()) ?></p>
                     </div>
                 </div>
             </div>
@@ -278,10 +290,11 @@ $totalAnalyses = $stmtCount->fetchColumn();
         </div>
 
         <div class="col-lg-4">
-            <!-- Recent Activity / Tips could go here -->
-            <div class="card bg-primary text-white p-4">
-                <h5><i class="fas fa-star me-2"></i>Pro Tip</h5>
-                <p class="small opacity-75 mb-0">Quantify your achievements! Instead of "Managed a team", say "Managed a team of 5 developers and increased velocity by 20%".</p>
+            <!-- Additional Resources / History Preview -->
+            <div class="card p-4">
+                <h5 class="fw-bold mb-3">Quick Actions</h5>
+                <button class="btn btn-outline-primary mb-2 w-100" data-bs-toggle="modal" data-bs-target="#uploadModal"><i class="fas fa-cloud-upload-alt me-2"></i> Upload New CV</button>
+                <a href="../history/index.php" class="btn btn-outline-secondary w-100"><i class="fas fa-history me-2"></i> View History</a>
             </div>
         </div>
     </div>
@@ -295,8 +308,9 @@ $totalAnalyses = $stmtCount->fetchColumn();
                 <h5 class="modal-title">Upload CV for AI Analysis</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="process_cv.php" method="POST" enctype="multipart/form-data">
+            <form id="uploadForm" enctype="multipart/form-data">
                 <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="uploadError"></div>
                     <div class="mb-3">
                         <label class="form-label">Select PDF File</label>
                         <input type="file" name="cv_file" class="form-control" accept=".pdf" required>
@@ -312,6 +326,56 @@ $totalAnalyses = $stmtCount->fetchColumn();
     </div>
 </div>
 
+<!-- Loading Overlay -->
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 1050; align-items: center; justify-content: center; flex-direction: column;">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <h4 class="text-white mt-4 fw-bold">Analyzing your CV...</h4>
+    <p class="text-white-50">This might take a few moments. We are processing your data.</p>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    let formData = new FormData(this);
+    let overlay = document.getElementById('loadingOverlay');
+    let modalEl = document.getElementById('uploadModal');
+    let modal = bootstrap.Modal.getInstance(modalEl);
+    let errorDiv = document.getElementById('uploadError');
+    
+    modal.hide();
+    overlay.style.display = 'flex';
+    errorDiv.classList.add('d-none');
+    
+    fetch('process_cv.php', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.reload();
+        } else {
+            overlay.style.display = 'none';
+            modal.show();
+            errorDiv.textContent = data.message || 'Something went wrong.';
+            errorDiv.classList.remove('d-none');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        overlay.style.display = 'none';
+        modal.show();
+        errorDiv.textContent = 'Network error or server unavailable. Please try again.';
+        errorDiv.classList.remove('d-none');
+    });
+});
+</script>
 </body>
 </html>
