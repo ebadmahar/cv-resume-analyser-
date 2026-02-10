@@ -13,10 +13,19 @@ $stats['analyses'] = $pdo->query("SELECT COUNT(*) FROM cv_analyses")->fetchColum
 $stats['api_key'] = getSetting($pdo, 'gemini_api_key');
 
 // Update API Key
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['api_key'])) {
-    $apiKey = sanitizeInput($_POST['api_key']);
-    $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('gemini_api_key', ?) ON DUPLICATE KEY UPDATE setting_value = ?");
-    $stmt->execute([$apiKey, $apiKey]);
+// Update Settings
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['api_key'])) {
+        $apiKey = sanitizeInput($_POST['api_key']);
+        $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('gemini_api_key', ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+        $stmt->execute([$apiKey, $apiKey]);
+    }
+    
+    // Maintenance Mode
+    $maintenanceMode = isset($_POST['maintenance_mode']) ? '1' : '0';
+    $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('maintenance_mode', ?) ON DUPLICATE KEY UPDATE setting_value = ?");
+    $stmt->execute([$maintenanceMode, $maintenanceMode]);
+
     header("Location: index.php");
     exit();
 }
@@ -226,6 +235,43 @@ $logs = $pdo->query("SELECT l.login_time, l.ip_address, u.name FROM login_logs l
 
         <div class="row g-4">
             <div class="col-lg-8">
+                <!-- Security Logs -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0 text-danger"><i class="fas fa-shield-alt me-2"></i>Security Alerts</h5>
+                        <span class="badge bg-danger bg-opacity-10 text-danger">Honeypot Hits</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>IP Address</th>
+                                    <th>Attempted IP</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $security_logs = $pdo->query("SELECT * FROM security_logs ORDER BY created_at DESC LIMIT 5")->fetchAll();
+                                if($security_logs):
+                                    foreach($security_logs as $log): 
+                                ?>
+                                <tr>
+                                    <td class="font-monospace text-danger fw-bold"><?= $log['ip_address'] ?></td>
+                                    <td class="small text-secondary"><?= htmlspecialchars($log['attempted_url']) ?></td>
+                                    <td class="text-secondary small"><?= date('M j H:i', strtotime($log['created_at'])) ?></td>
+                                </tr>
+                                <?php endforeach; else: ?>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">No security threats detected.</td>
+                                </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recent Logins -->
                 <div class="card">
                     <div class="card-header bg-white border-0 py-3 px-4">
                         <h5 class="fw-bold mb-0">Recent Logins</h5>
@@ -269,14 +315,23 @@ $logs = $pdo->query("SELECT l.login_time, l.ip_address, u.name FROM login_logs l
                     </div>
                     <div class="card-body px-4">
                          <form method="POST">
-                            <div class="mb-3">
+                            <div class="mb-4">
                                 <label class="form-label small fw-bold text-secondary">Gemini API Key</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0 text-secondary"><i class="fas fa-key"></i></span>
                                     <input type="text" name="api_key" class="form-control border-start-0 ps-0" value="<?= htmlspecialchars($stats['api_key'] ?? '') ?>" placeholder="Paste key here">
                                 </div>
-                                <div class="form-text small">Required for CV analysis functionalities.</div>
                             </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-secondary d-block">Maintenance Mode</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="maintenance_mode" id="maintenanceMode" <?= getSetting($pdo, 'maintenance_mode') === '1' ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="maintenanceMode">Enable Maintenance Mode</label>
+                                </div>
+                                <div class="form-text small">When enabled, only admins can access the site.</div>
+                            </div>
+
                             <button class="btn btn-primary w-100 py-2 rounded-3 fw-bold" type="submit">
                                 Save Changes
                             </button>

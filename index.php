@@ -1,4 +1,26 @@
-<?php session_start(); ?>
+<?php
+require_once 'config/db.php';
+require_once 'includes/functions.php';
+
+// Check Maintenance Mode (requires $pdo from db.php)
+$maintenance = getSetting($pdo, 'maintenance_mode');
+if ($maintenance === '1' && !isset($_SESSION['user_id'])) {
+    // Check if user is admin
+    $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+    $isAdmin = false;
+    if(isset($_SESSION['user_id'])){
+        $stmt->execute([$_SESSION['user_id']]);
+        $user = $stmt->fetch();
+        if($user && $user['role'] === 'admin') $isAdmin = true;
+    }
+    
+    if(!$isAdmin){
+        header("Location: maintenance.php");
+        exit();
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,11 +175,12 @@
         }
 
     </style>
+<link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="index.php">
                 <i class="fas fa-layer-group me-2"></i>CV Analyzer
@@ -181,26 +204,26 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero d-flex align-items-center">
+    <section class="hero-gradient d-flex align-items-center">
         <div class="container">
-            <div class="row align-items-center">
+            <div class="row align-items-center pt-5 pb-5">
                 <div class="col-lg-6">
-                    <span class="badge bg-primary bg-opacity-10 text-primary mb-3 px-3 py-2 rounded-pill">
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 mb-3 px-3 py-2 rounded-pill">
                         <i class="fas fa-sparkles me-1"></i> AI-Powered Resume Analysis
                     </span>
-                    <h1>Land your dream job with data-driven insights.</h1>
-                    <p>Upload your CV and get an instant, professional analysis. Identify skill gaps, improve your ATS score, and follow a personalized roadmap.</p>
+                    <h1 class="display-4 fw-bold mb-4">Land your dream job with data-driven insights.</h1>
+                    <p class="lead mb-4">Upload your CV and get an instant, professional analysis. Identify skill gaps, improve your ATS score, and follow a personalized roadmap.</p>
                     <div class="d-flex gap-3">
-                        <a href="auth/register.php" class="btn btn-primary btn-lg">Start Free Analysis</a>
-                        <a href="#how-it-works" class="btn btn-outline-primary btn-lg">View Demo</a>
+                        <a href="auth/register.php" class="btn btn-primary btn-lg shadow-sm">Start Free Analysis</a>
+                        <a href="blogs.php" class="btn btn-outline-primary btn-lg">Blogs</a>
                     </div>
-                    <div class="mt-4 d-flex align-items-center text-muted small">
-                        <i class="fas fa-check-circle text-success me-1"></i> No credit card required &nbsp;&nbsp;
+                    <div class="mt-4 d-flex align-items-center text-muted small pb-5">
+                        <i class="fas fa-check-circle text-success me-1"></i> 100% Free &nbsp;&nbsp;
                         <i class="fas fa-check-circle text-success me-1"></i> Instant results
                     </div>
                 </div>
-                <div class="col-lg-6 mt-5 mt-lg-0">
-                    <img src="assets/hero_illustration.svg" alt="Analysis Dashboard" class="img-fluid rounded-3 shadow-lg" style="transform: perspective(1000px) rotateY(-5deg);">
+                <div class="col-lg-6 mt-5 mt-lg-0 text-center">
+                    <img src="assets/hero_illustration.svg" alt="Analysis Dashboard" class="img-fluid rounded-3 shadow-lg" style="transform: perspective(1000px) rotateY(-5deg); max-width: 90%;">
                 </div>
             </div>
         </div>
@@ -286,18 +309,18 @@
     </section>
 
     <!-- Footer -->
-    <footer>
+    <footer class="py-5 mt-auto">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <h5 class="fw-bold mb-3"><i class="fas fa-layer-group me-2"></i>CV Analyzer</h5>
-                    <p class="text-secondary">Empowering professionals with AI-driven career insights.</p>
+                    <p class="text-secondary">Empowering professionals with AI-driven career insights. Get your resume analyzed instantly.</p>
                 </div>
                 <div class="col-md-2 mb-4">
                     <h6 class="fw-bold mb-3">Product</h6>
                     <ul class="list-unstyled text-secondary">
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">Features</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">Pricing</a></li>
+                        <li class="mb-2"><a href="index.php" class="text-decoration-none text-secondary">Home</a></li>
+                        <li class="mb-2"><a href="auth/register.php" class="text-decoration-none text-secondary">Get Started</a></li>
                         <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">FAQ</a></li>
                     </ul>
                 </div>
@@ -305,8 +328,8 @@
                     <h6 class="fw-bold mb-3">Company</h6>
                     <ul class="list-unstyled text-secondary">
                         <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">About</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">Blog</a></li>
                         <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">Contact</a></li>
+                         <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">Blogs</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 mb-4">
@@ -318,7 +341,7 @@
                 </div>
             </div>
             <div class="border-top pt-4 mt-4 text-center text-secondary">
-                <small>&copy; 2026 AI CV Analyzer. All rights reserved.</small>
+                <p class="small mb-0">&copy; <?= date('Y') ?> CV Analyzer. All rights reserved.</p>
             </div>
         </div>
     </footer>
