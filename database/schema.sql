@@ -39,4 +39,19 @@ CREATE TABLE IF NOT EXISTS settings (
 -- Insert default admin (password: admin123)
 -- Hash generated for 'admin123' might vary, but we will handle registration or seed it in PHP.
 -- Using a placeholder hash for example: $2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi (password)
-INSERT INTO settings (setting_key, setting_value) VALUES ('gemini_api_key', '');
+-- INSERT INTO settings (setting_key, setting_value) VALUES ('gemini_api_key', '');
+
+CREATE TABLE IF NOT EXISTS blogs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    short_description TEXT,
+    content LONGTEXT,
+    image_url VARCHAR(255),
+    tags VARCHAR(255),
+    status ENUM('draft', 'published') DEFAULT 'draft',
+    author_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
+);

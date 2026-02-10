@@ -125,26 +125,17 @@ $users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll()
 <body>
 
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-brand">
-            <i class="fas fa-shield-alt me-2"></i> Admin Panel
-        </div>
-        <nav class="nav flex-column mt-4 flex-grow-1">
-            <a href="index.php" class="nav-link">
-                <i class="fas fa-home"></i> Overview
-            </a>
-            <a href="users.php" class="nav-link active">
-                <i class="fas fa-users"></i> Manage Users
-            </a>
-            <a href="../index.php" class="nav-link" target="_blank">
-                <i class="fas fa-external-link-alt"></i> View Site
-            </a>
+    <div class="sidebar d-flex flex-column">
+        <a href="../index.php" class="d-flex align-items-center justify-content-center py-4 text-decoration-none">
+            <h4 class="fw-bold text-primary m-0"><i class="fas fa-robot me-2"></i>Admin</h4>
+        </a>
+        <nav class="nav flex-column mt-2">
+            <a href="index.php" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="users.php" class="nav-link active"><i class="fas fa-users"></i> Users</a>
+            <a href="blogs.php" class="nav-link"><i class="fas fa-newspaper"></i> Blogs</a>
+            <a href="settings.php" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="../auth/logout.php" class="nav-link mt-auto"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </nav>
-         <div class="p-3 border-top">
-             <a href="../auth/logout.php" class="nav-link text-danger m-0">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-        </div>
     </div>
 
     <!-- Main Content -->

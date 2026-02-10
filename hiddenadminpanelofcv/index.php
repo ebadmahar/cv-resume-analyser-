@@ -161,16 +161,12 @@ $logs = $pdo->query("SELECT l.login_time, l.ip_address, u.name FROM login_logs l
         <div class="sidebar-brand">
             <i class="fas fa-shield-alt me-2"></i> Admin Panel
         </div>
-        <nav class="nav flex-column mt-4 flex-grow-1">
-            <a href="index.php" class="nav-link active">
-                <i class="fas fa-home"></i> Overview
-            </a>
-            <a href="users.php" class="nav-link">
-                <i class="fas fa-users"></i> Manage Users
-            </a>
-            <a href="../index.php" class="nav-link" target="_blank">
-                <i class="fas fa-external-link-alt"></i> View Site
-            </a>
+        <nav class="nav flex-column mt-2">
+            <a href="index.php" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="users.php" class="nav-link"><i class="fas fa-users"></i> Users</a>
+            <a href="blogs.php" class="nav-link"><i class="fas fa-newspaper"></i> Blogs</a>
+            <a href="settings.php" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+            <a href="../auth/logout.php" class="nav-link mt-auto"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </nav>
         <div class="p-3 border-top">
              <a href="../auth/logout.php" class="nav-link text-danger m-0">

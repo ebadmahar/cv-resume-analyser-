@@ -1,0 +1,2 @@
+INSERT INTO blogs (title, slug, short_description, content, tags, status, author_id) 
+VALUES ('Welcome to CV Analyzer', 'welcome-to-cv-analyzer', 'This is your first blog post. You can edit or delete it from the admin panel.', '<p>Welcome to your new blog! This is a sample post to show how it looks. You can go to the admin panel to edit this or create new ones.</p>', 'Welcome, Update', 'published', 1);
