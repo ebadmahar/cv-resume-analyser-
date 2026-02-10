@@ -1,0 +1,20 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <rect width="800" height="600" fill="#f8fafc"/>
+    <g transform="translate(100, 100)">
+        <rect x="50" y="50" width="400" height="500" rx="20" fill="#ffffff" stroke="#e2e8f0" stroke-width="4"/>
+        <rect x="100" y="100" width="300" height="40" rx="8" fill="#e2e8f0"/>
+        <rect x="100" y="180" width="200" height="20" rx="4" fill="#cbd5e1"/>
+        <rect x="100" y="220" width="280" height="20" rx="4" fill="#cbd5e1"/>
+        <rect x="100" y="260" width="260" height="20" rx="4" fill="#cbd5e1"/>
+        
+        <rect x="100" y="320" width="150" height="30" rx="4" fill="#e2e8f0"/>
+        <rect x="100" y="370" width="300" height="20" rx="4" fill="#cbd5e1"/>
+        <rect x="100" y="410" width="290" height="20" rx="4" fill="#cbd5e1"/>
+        
+        <!-- Magnifying Glass / AI Analysis -->
+        <circle cx="350" cy="250" r="80" fill="rgba(37, 99, 235, 0.1)" stroke="#2563eb" stroke-width="8"/>
+        <line x1="400" y1="300" x2="480" y2="380" stroke="#2563eb" stroke-width="15" stroke-linecap="round"/>
+        
+        <text x="350" y="480" font-family="sans-serif" font-size="24" fill="#2563eb" text-anchor="middle" font-weight="bold">AI Analysis</text>
+    </g>
+</svg>
