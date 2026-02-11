@@ -6,63 +6,48 @@ requireLogin();
 
 if ($_SESSION['role'] !== 'admin') {
     header("Location: ../dashboard/index.php");
-    exit();
+    exit;
 }
 
 $blog = [
-    'id' => '',
-    'title' => '',
-    'slug' => '',
-    'short_description' => '',
-    'content' => '',
-    'image_url' => '',
-    'tags' => '',
-    'status' => 'draft'
+    'id' => '', 'title' => '', 'slug' => '', 'short_description' => '',
+    'content' => '', 'image_url' => '', 'tags' => '', 'status' => 'draft'
 ];
 
-$error = '';
-$success = '';
+$err = '';
+$msg = '';
 
-// Edit Mode
 if (isset($_GET['id'])) {
-    $stmt = $pdo->prepare("SELECT * FROM blogs WHERE id = ?");
-    $stmt->execute([$_GET['id']]);
-    $fetched = $stmt->fetch();
-    if ($fetched) {
-        $blog = $fetched;
-    }
+    $q = $pdo->prepare("SELECT * FROM blogs WHERE id = ?");
+    $q->execute([$_GET['id']]);
+    if ($fetched = $q->fetch()) $blog = $fetched;
 }
 
-// Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = $_POST['title'];
-    // Auto-generate slug if empty, else sanitize
-    $slug = !empty($_POST['slug']) ? $_POST['slug'] : strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
-    $short_description = $_POST['short_description'];
-    $content = $_POST['content']; // Rich text, be careful with sanitization if needed, but admin is trusted
-    $image_url = $_POST['image_url']; // Can be URL or uploaded path
-    $tags = $_POST['tags'];
-    $status = $_POST['status'];
-    $author_id = $_SESSION['user_id'];
+    $title = trim($_POST['title']);
+    $slug  = !empty($_POST['slug']) ? trim($_POST['slug']) : strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
+    $desc  = trim($_POST['short_description']);
+    $body  = $_POST['content']; 
+    $img   = trim($_POST['image_url']); 
+    $tags  = trim($_POST['tags']);
+    $stats = $_POST['status'];
+    $uid   = $_SESSION['user_id'];
 
     if (isset($_GET['id'])) {
-        // Update
-        $stmt = $pdo->prepare("UPDATE blogs SET title=?, slug=?, short_description=?, content=?, image_url=?, tags=?, status=? WHERE id=?");
-        if ($stmt->execute([$title, $slug, $short_description, $content, $image_url, $tags, $status, $_GET['id']])) {
-            $success = "Blog updated successfully.";
-            // Refresh data
+        $q = $pdo->prepare("UPDATE blogs SET title=?, slug=?, short_description=?, content=?, image_url=?, tags=?, status=? WHERE id=?");
+        if ($q->execute([$title, $slug, $desc, $body, $img, $tags, $stats, $_GET['id']])) {
+            $msg = "Blog updated.";
             $blog = array_merge($blog, $_POST);
         } else {
-            $error = "Failed to update blog.";
+            $err = "Update failed.";
         }
     } else {
-        // Insert
-        $stmt = $pdo->prepare("INSERT INTO blogs (title, slug, short_description, content, image_url, tags, status, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        if ($stmt->execute([$title, $slug, $short_description, $content, $image_url, $tags, $status, $author_id])) {
+        $q = $pdo->prepare("INSERT INTO blogs (title, slug, short_description, content, image_url, tags, status, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        if ($q->execute([$title, $slug, $desc, $body, $img, $tags, $stats, $uid])) {
             header("Location: blogs.php");
-            exit();
+            exit;
         } else {
-            $error = "Failed to create blog.";
+            $err = "Creation failed.";
         }
     }
 }
@@ -76,10 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
-    <!-- TinyMCE -->
     <?php
-        $tiny_key = getSetting($pdo, 'tinymce_api_key');
-        if(!$tiny_key) $tiny_key = 'no-api-key';
+        $tiny_key = getSetting($pdo, 'tinymce_api_key') ?: 'no-api-key';
     ?>
     <script src="https://cdn.tiny.cloud/1/<?= htmlspecialchars($tiny_key) ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <script>
@@ -88,31 +71,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
         toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
         height: 500,
-        promotion: false // basic mode
+        promotion: false
       });
     </script>
     <style>
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            background: #fff;
-            border-right: 1px solid #e3e6f0;
-            position: fixed;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 2rem;
-        }
-        .form-label {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-color);
-        }
+        .sidebar { width: 250px; height: 100vh; background: #fff; border-right: 1px solid #e3e6f0; position: fixed; }
+        .main-content { margin-left: 250px; padding: 2rem; }
+        .form-label { font-weight: 600; font-size: 0.9rem; color: var(--text-color); }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar (Simplified Link) -->
     <div class="sidebar d-flex flex-column">
         <a href="../index.php" class="d-flex align-items-center justify-content-center py-4 text-decoration-none">
             <h4 class="fw-bold text-primary m-0"><i class="fas fa-robot me-2"></i>Admin</h4>
@@ -123,18 +92,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </nav>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold text-dark"><?= $blog['id'] ? 'Edit Post' : 'Create New Post' ?></h2>
              <a href="blogs.php" class="btn btn-outline-secondary">Cancel</a>
         </div>
 
-        <?php if($error): ?>
-            <div class="alert alert-danger"><?= $error ?></div>
+        <?php if($err): ?>
+            <div class="alert alert-danger"><?= $err ?></div>
         <?php endif; ?>
-        <?php if($success): ?>
-            <div class="alert alert-success"><?= $success ?></div>
+        <?php if($msg): ?>
+            <div class="alert alert-success"><?= $msg ?></div>
         <?php endif; ?>
 
         <div class="card shadow-sm">

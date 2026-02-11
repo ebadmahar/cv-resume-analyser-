@@ -1,15 +1,21 @@
 <?php
-// Database Configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'cv');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+
+$host = 'localhost';
+$db   = 'cv';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$opt = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
 
 try {
-    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";chatset=utf8mb4", DB_USER, DB_PASS);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Database Connection Failed: " . $e->getMessage());
+     $pdo = new PDO($dsn, $user, $pass, $opt);
+} catch (\PDOException $e) {
+     // in production we should log this, not show it
+     die("DB Error"); 
 }
-?>
